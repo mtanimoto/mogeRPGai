@@ -1,4 +1,4 @@
-package moge.rpg.ai;
+package moge.rpg.ai.algorithm;
 
 import java.util.ArrayDeque;
 import java.util.PriorityQueue;
@@ -44,7 +44,7 @@ public class MazeShortestAstar {
     }
 
     //A*(A-star)探索アルゴリズム
-    Queue<String> astar() {
+    public Queue<String> astar() {
         int[][] grid = new int[n][m]; //移動コスト(距離)の記録
         int sx, sy, gx, gy; //スタートとゴール位置
         sx = sy = gx = gy = 0;
