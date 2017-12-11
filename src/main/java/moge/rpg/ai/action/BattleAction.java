@@ -19,7 +19,8 @@ public class BattleAction implements Action {
     public String execute() {
         if (vo.getPlayer().needHeal()) return "HEAL";
         MonstersVo monsters = vo.getMonsters();
-        return "STAB " + monsters.findAttackTarger();
+//        return "STAB " + monsters.findAttackTarget();
+        return "SWING";
     }
 
 }

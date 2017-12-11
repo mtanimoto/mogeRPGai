@@ -1,14 +1,12 @@
 package moge.rpg.ai.action;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import moge.rpg.ai.App;
 import moge.rpg.ai.algorithm.MazeShortestAstar;
 import moge.rpg.ai.vo.MapVo;
 
@@ -22,8 +20,6 @@ public class MapAction implements Action {
     /** ダンジョンの縦幅 */
     private static final int Y_LENGTH = 11;
 
-    private Queue<String> shortestPath = new ArrayDeque<>();
-
     @Override
     public Action load(Map<String, Object> receiveData) {
         vo = new MapVo(receiveData);
@@ -33,24 +29,10 @@ public class MapAction implements Action {
     @Override
     public String execute() {
         if (vo.getPlayer().needHeal()) return "HEAL";
-        if (shortestPath.size() > 0) return shortestPath.poll();
 
         // 自分の位置
         Map<String, Integer> myPos = coordinateToMap(
                 Arrays.asList(vo.getPlayer().getPosX(), vo.getPlayer().getPosY()));
-
-        // 目的地
-        Map<String, Integer> destination = null;
-
-        // 宝箱の位置
-        List<Map<String, Integer>> itemsPos = coordinateToMapList(vo.getItems());
-        if (itemsPos.size() == 0) {
-            // 階段の位置
-            List<List<Integer>> kaidan = vo.getKaidan();
-            destination = coordinateToMap(kaidan.get(0));
-        } else {
-            destination = itemsPos.get(0);
-        }
 
         // 外壁の位置
         List<Map<String, Integer>> wallsPos = coordinateToMapList(vo.getWalls());
@@ -58,14 +40,31 @@ public class MapAction implements Action {
         List<Map<String, Integer>> blocksPos = coordinateToMapList(vo.getBlocks());
 
         // ダンジョンを組み立てる
-        String[] dungeon = assembleDungeon(myPos, destination, wallsPos, blocksPos);
+        int[][] dungeon = assembleDungeon(myPos, wallsPos, blocksPos);
+
+        // 宝箱の位置
+        List<Map<String, Integer>> itemsPos = coordinateToMapList(vo.getItems());
+
+        // 階段の位置
+        List<Map<String, Integer>> kaidanPos = coordinateToMapList(vo.getKaidan());
+
+        List<Map<String, Integer>> searchTargets = Stream.of(itemsPos, kaidanPos).flatMap(p -> p.stream()).collect(Collectors.toList());
 
         // 自分の位置から階段までの最短経路を探索する
-        MazeShortestAstar msa = new MazeShortestAstar(X_LENGTH, Y_LENGTH, dungeon);
-        shortestPath = msa.astar();
+        List<Queue<String>> goalCandidatePaths = new ArrayList<>();
+        for (Map<String, Integer> searchPos : searchTargets) {
+            int sx = myPos.get("x");
+            int sy = myPos.get("y");
+            int gx = searchPos.get("x");
+            int gy = searchPos.get("y");
+            MazeShortestAstar msa = new MazeShortestAstar(X_LENGTH, Y_LENGTH, dungeon);
+            Queue<String> path = msa.astar(sx, sy, gx, gy);
+            goalCandidatePaths.add(path);
+        }
 
         // 探索結果
-        return shortestPath.poll();
+        goalCandidatePaths.sort(Comparator.comparingInt(Collection::size));
+        return goalCandidatePaths.get(0).poll();
     }
 
     /**
@@ -129,11 +128,11 @@ public class MapAction implements Action {
      *    <dd>こんな感じになる。これを1行ずつStringで1行ずつ配列に持っている</dd>
      *  </dt>
      *  <dt><dd>■■■■■■■■■■■</dd></dt>
-     *  <dt><dd>■　　　　　　　　　■</dd></dt>
+     *  <dt><dd>■　　　　　　　　宝■</dd></dt>
      *  <dt><dd>■　□□□□□　□□■</dd></dt>
-     *  <dt><dd>■　　　　　□　　　■</dd></dt>
+     *  <dt><dd>■　　　　宝□　　　■</dd></dt>
      *  <dt><dd>■　□□□□□　□　■</dd></dt>
-     *  <dt><dd>■　□Ｓ　　□　□　■</dd></dt>
+     *  <dt><dd>■宝□Ｓ　　□宝□　■</dd></dt>
      *  <dt><dd>■□□□□　□□□　■</dd></dt>
      *  <dt><dd>■　　　　　□　　　■</dd></dt>
      *  <dt><dd>■　□□□□□　□　■</dd></dt>
@@ -141,41 +140,31 @@ public class MapAction implements Action {
      *  <dt><dd>■■■■■■■■■■■</dd></dt>
      * </dl>
      * @param myPos 自分の座標
-     * @param kaidanPos 階段の座標
      * @param wallsPos 外壁の座標
      * @param blocksPos 内壁の座標
      * @return n×mのダンジョン(説明の絵を参照)
      */
-    private String[] assembleDungeon(Map<String, Integer> myPos, Map<String, Integer> kaidanPos,
-            List<Map<String, Integer>> wallsPos, List<Map<String, Integer>> blocksPos) {
-        List<StringBuilder> sbs = new ArrayList<>();
+    private int[][] assembleDungeon(Map<String, Integer> myPos,
+                                    List<Map<String, Integer>> wallsPos, List<Map<String, Integer>> blocksPos) {
+        int[][] grid = new int[X_LENGTH][Y_LENGTH];
+
         for (int y = 0; y < Y_LENGTH; y++) {
-            StringBuilder sb = new StringBuilder();
             for (int x = 0; x < X_LENGTH; x++) {
                 if (isLookingCoordinate(myPos, x, y)) {
-                    sb.append("Ｓ");
-                    continue;
-                }
-                if (isLookingCoordinate(kaidanPos, x, y)) {
-                    sb.append("Ｇ");
+                    grid[y][x] = 0;
                     continue;
                 }
                 if (isLooking(wallsPos, x, y)) {
-                    sb.append("■");
+                    grid[y][x] = -1;
                     continue;
                 }
                 if (isLooking(blocksPos, x, y)) {
-                    sb.append("□");
+                    grid[y][x] = -1;
                     continue;
                 }
-                sb.append("　");
+                grid[y][x] = Integer.MAX_VALUE;
             }
-            sbs.add(sb);
         }
-        //        sbs.forEach(System.out::println);
-
-        List<String> list = sbs.stream().map(sb -> sb.toString()).collect(Collectors.toList());
-        return (String[]) list.toArray(new String[list.size()]);
+        return grid;
     }
-
 }

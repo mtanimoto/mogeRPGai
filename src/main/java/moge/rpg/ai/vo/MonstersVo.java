@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class MonstersVo {
 
-    List<MonsterVo> monsters;
+    private List<MonsterVo> monsters;
 
     public MonstersVo(List<Map<String, Object>> monstersData) {
         monsters = new ArrayList<>();
@@ -17,7 +17,7 @@ public class MonstersVo {
         }
     }
 
-    public int findAttackTarger() {
+    public int findAttackTarget() {
         return monsters.get(0).getNumber();
     }
 }

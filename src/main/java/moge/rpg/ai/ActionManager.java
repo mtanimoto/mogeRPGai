@@ -2,6 +2,7 @@ package moge.rpg.ai;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import moge.rpg.ai.action.Action;
 import moge.rpg.ai.action.BattleAction;
@@ -14,7 +15,7 @@ public class ActionManager {
 
     private Action action;
 
-    private Map<String, Action> ma = new HashMap<String, Action>() {
+    private Map<String, Action> ma = new ConcurrentHashMap<String, Action>() {
         {
             put("map", new MapAction());
             put("battle", new BattleAction());
