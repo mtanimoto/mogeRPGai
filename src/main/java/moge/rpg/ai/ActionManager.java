@@ -1,12 +1,10 @@
 package moge.rpg.ai;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import moge.rpg.ai.action.Action;
 import moge.rpg.ai.action.BattleAction;
-import moge.rpg.ai.action.DamageInfoAction;
 import moge.rpg.ai.action.EquipAction;
 import moge.rpg.ai.action.LevelupAction;
 import moge.rpg.ai.action.MapAction;
@@ -19,7 +17,6 @@ public class ActionManager {
         {
             put("map", new MapAction());
             put("battle", new BattleAction());
-            put("damage-info", new DamageInfoAction());
             put("equip", new EquipAction());
             put("levelup", new LevelupAction());
         }
@@ -27,20 +24,19 @@ public class ActionManager {
 
     private String nowKey;
 
-    void load(Map<String, Object> receiveData) {
+    boolean load(Map<String, Object> receiveData) {
 
         boolean canSearch = false;
         canSearch = canSearch || searchKey(receiveData, "map");
         canSearch = canSearch || searchKey(receiveData, "battle");
-        canSearch = canSearch || searchKey(receiveData, "damage-info");
         canSearch = canSearch || searchKey(receiveData, "equip");
         canSearch = canSearch || searchKey(receiveData, "levelup");
 
         if (canSearch) {
             action.load(receiveData);
-            return;
+            return true;
         }
-        throw new RuntimeException("想定外のJSONを受信しました");
+        return false;
     }
 
     String execute() {

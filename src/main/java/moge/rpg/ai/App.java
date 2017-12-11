@@ -23,13 +23,17 @@ public class App {
 
         ActionManager am = new ActionManager();
         while (true) {
-            Scanner scanner = new Scanner(System.in);
-            String line = scanner.nextLine();
+            BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
 
-            Map<String, Object> data = mapper.readValue(line, HashMap.class);
-            am.load(data);
-            String output = am.execute();
-            System.out.println(output);
+            while (buffer.ready()) {
+                String line = buffer.readLine();
+
+                Map<String, Object> data = mapper.readValue(line, HashMap.class);
+                if (am.load(data)) {
+                    String output = am.execute();
+                    System.out.println(output);
+                }
+            }
         }
 //        Map<String, Object> data = mapper.readValue(testMap, HashMap.class);
 //        am.load(data);
