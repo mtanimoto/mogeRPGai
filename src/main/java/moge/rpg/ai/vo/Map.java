@@ -1,12 +1,11 @@
 package moge.rpg.ai.vo;
 
 import java.util.List;
-import java.util.Map;
 
-public class MapVo {
+public class Map {
 
     @SuppressWarnings("unchecked")
-    public MapVo(Map<String, Object> receiveData) {
+    public Map(java.util.Map<String, Object> receiveData) {
         this.map = (int) receiveData.get("map");
         this.blocks = (List<List<Integer>>) receiveData.get("blocks");
         this.walls = (List<List<Integer>>) receiveData.get("walls");
@@ -15,7 +14,7 @@ public class MapVo {
         this.boss = (List<List<Integer>>) receiveData.get("boss");
         this.events = (List<List<Integer>>) receiveData.get("events");
         this.ha2 = (List<List<Integer>>) receiveData.get("ha2");
-        this.player = new PlayerVo((Map<String, Object>) receiveData.get("player"));
+        this.player = new Player((java.util.Map<String, Object>) receiveData.get("player"));
     }
 
     private int map;
@@ -26,7 +25,7 @@ public class MapVo {
     private List<List<Integer>> boss;
     private List<List<Integer>> events;
     private List<List<Integer>> ha2;
-    private PlayerVo player;
+    private Player player;
 
     public int getMap() {
         return map;
@@ -60,7 +59,7 @@ public class MapVo {
         return ha2;
     }
 
-    public PlayerVo getPlayer() {
+    public Player getPlayer() {
         return player;
     }
 }

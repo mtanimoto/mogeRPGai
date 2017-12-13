@@ -1,15 +1,15 @@
 package moge.rpg.ai.action;
 
+import moge.rpg.ai.vo.Levelup;
+
 import java.util.Map;
 
-import moge.rpg.ai.vo.LevelupVo;
-
 public class LevelupAction implements Action {
-    private LevelupVo vo;
+    private Levelup vo;
 
     @Override
     public Action load(Map<String, Object> receiveData) {
-        this.vo = new LevelupVo(receiveData);
+        this.vo = new Levelup(receiveData);
         return this;
     }
 

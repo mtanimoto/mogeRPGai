@@ -3,9 +3,9 @@ package moge.rpg.ai.vo;
 import java.util.List;
 import java.util.Map;
 
-public class PlayerVo {
+public class Player {
     @SuppressWarnings("unchecked")
-    public PlayerVo(Map<String, Object> playerData) {
+    public Player(Map<String, Object> playerData) {
         this.hp = (int) playerData.get("hp");
         this.maxhp = (int) playerData.get("maxhp");
         this.str = (int) playerData.get("str");

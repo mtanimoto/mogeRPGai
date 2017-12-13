@@ -2,9 +2,9 @@ package moge.rpg.ai.vo;
 
 import java.util.Map;
 
-public class WeaponVo {
+public class Weapon {
 
-    public WeaponVo(Map<String, Object> receiveData) {
+    public Weapon(Map<String, Object> receiveData) {
         this.name = (String) receiveData.get("name");
         this.str = (int) receiveData.get("str");
         this.hp = (int) receiveData.get("hp");

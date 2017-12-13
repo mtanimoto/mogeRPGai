@@ -1,7 +1,6 @@
 package moge.rpg.ai.action;
 
 import moge.rpg.ai.algorithm.MazeShortestAstar;
-import moge.rpg.ai.vo.MapVo;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,21 +8,11 @@ import java.util.stream.Stream;
 
 public class MapAction implements Action {
 
-    private MapVo vo;
-
-    /**
-     * ダンジョンの横幅
-     */
-    private static final int X_LENGTH = 11;
-
-    /**
-     * ダンジョンの縦幅
-     */
-    private static final int Y_LENGTH = 11;
+    private moge.rpg.ai.vo.Map vo;
 
     @Override
     public Action load(Map<String, Object> receiveData) {
-        vo = new MapVo(receiveData);
+        vo = new moge.rpg.ai.vo.Map(receiveData);
         return this;
     }
 
@@ -40,8 +29,12 @@ public class MapAction implements Action {
         // 内壁の位置
         List<Map<String, Integer>> blocksPos = coordinateToMapList(vo.getBlocks());
 
+        // X,Yの辺の長さを取得
+        int maxX = getMaxX(wallsPos);
+        int maxY = getMaxY(wallsPos);
+
         // ダンジョンを組み立てる
-        int[][] dungeon = assembleDungeon(myPos, wallsPos, blocksPos);
+        int[][] dungeon = assembleDungeon(myPos, wallsPos, blocksPos, maxX, maxY);
 
         // 宝箱の位置
         List<Map<String, Integer>> itemsPos = coordinateToMapList(vo.getItems());
@@ -59,7 +52,7 @@ public class MapAction implements Action {
             int sy = myPos.get("y");
             int gx = searchPos.get("x");
             int gy = searchPos.get("y");
-            MazeShortestAstar msa = new MazeShortestAstar(getMaxX(wallsPos), getMaxY(wallsPos), dungeon);
+            MazeShortestAstar msa = new MazeShortestAstar(maxX, maxY, dungeon);
             Queue<String> path = msa.astar(sx, sy, gx, gy);
             goalCandidatePaths.add(path);
         }
@@ -137,14 +130,16 @@ public class MapAction implements Action {
      * @param myPos     自分の座標
      * @param wallsPos  外壁の座標
      * @param blocksPos 内壁の座標
+     * @param maxX      横の最長
+     * @param maxY      縦の最長
      * @return n×mのダンジョン(説明の絵を参照)
      */
     private int[][] assembleDungeon(Map<String, Integer> myPos,
-                                    List<Map<String, Integer>> wallsPos, List<Map<String, Integer>> blocksPos) {
-        int[][] grid = new int[Y_LENGTH][X_LENGTH];
+                                    List<Map<String, Integer>> wallsPos, List<Map<String, Integer>> blocksPos, int maxX, int maxY) {
+        int[][] grid = new int[maxY][maxX];
 
-        for (int y = 0; y < Y_LENGTH; y++) {
-            for (int x = 0; x < X_LENGTH; x++) {
+        for (int y = 0; y < maxY; y++) {
+            for (int x = 0; x < maxX; x++) {
                 if (isLookingCoordinate(myPos, x, y)) {
                     grid[y][x] = 0;
                     continue;

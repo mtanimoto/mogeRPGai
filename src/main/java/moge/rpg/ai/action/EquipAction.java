@@ -1,15 +1,15 @@
 package moge.rpg.ai.action;
 
+import moge.rpg.ai.vo.Equip;
+
 import java.util.Map;
 
-import moge.rpg.ai.vo.EquipVo;
-
 public class EquipAction implements Action {
-    private EquipVo vo;
+    private Equip vo;
 
     @Override
     public Action load(Map<String, Object> receiveData) {
-        this.vo = new EquipVo(receiveData);
+        this.vo = new Equip(receiveData);
         return this;
     }
 

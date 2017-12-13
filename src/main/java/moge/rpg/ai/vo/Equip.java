@@ -2,22 +2,22 @@ package moge.rpg.ai.vo;
 
 import java.util.Map;
 
-public class EquipVo {
+public class Equip {
 
     @SuppressWarnings("unchecked")
-    public EquipVo(Map<String, Object> receiveData) {
-        this.now = new WeaponVo((Map<String, Object>) receiveData.get("now"));
-        this.discover = new WeaponVo((Map<String, Object>) receiveData.get("discover"));
+    public Equip(Map<String, Object> receiveData) {
+        this.now = new Weapon((Map<String, Object>) receiveData.get("now"));
+        this.discover = new Weapon((Map<String, Object>) receiveData.get("discover"));
     }
 
-    private WeaponVo now;
-    private WeaponVo discover;
+    private Weapon now;
+    private Weapon discover;
 
-    public WeaponVo getNow() {
+    public Weapon getNow() {
         return now;
     }
 
-    public WeaponVo getDiscover() {
+    public Weapon getDiscover() {
         return discover;
     }
 

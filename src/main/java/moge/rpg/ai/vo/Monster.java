@@ -2,9 +2,9 @@ package moge.rpg.ai.vo;
 
 import java.util.Map;
 
-public class MonsterVo implements Comparable<MonsterVo> {
+public class Monster implements Comparable<Monster> {
 
-    public MonsterVo(Map<String, Object> monsterData) {
+    public Monster(Map<String, Object> monsterData) {
         this.name = (String) monsterData.get("name");
         this.number = (int) monsterData.get("number");
         this.level = (int) monsterData.get("level");
@@ -33,7 +33,7 @@ public class MonsterVo implements Comparable<MonsterVo> {
     }
 
     @Override
-    public int compareTo(MonsterVo o) {
+    public int compareTo(Monster o) {
         int leveldiff = this.level - o.getLevel();
         if (leveldiff == 0) {
             int hpdiff = this.hp - o.getHp();
