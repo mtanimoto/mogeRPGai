@@ -94,7 +94,7 @@ public class PlayerVo {
 
     public boolean needHeal() {
         double hpPercent = (double) hp / (double) maxhp;
-        return hpPercent <= 0.3 && heal > 0;
+        return hpPercent <= 0.35 && heal > 0;
     }
 
 }

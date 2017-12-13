@@ -1,15 +1,10 @@
 package moge.rpg.ai;
 
-import java.io.BufferedReader;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
-import java.util.logging.*;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import moge.rpg.ai.action.MapAction;
 
 public class App {
 
@@ -23,7 +18,7 @@ public class App {
 
         ActionManager am = new ActionManager();
         while (true) {
-            BufferedReader buffer = new BufferedReader(new InputStreamReader(System.in));
+            java.io.BufferedReader buffer = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
 
             while (buffer.ready()) {
                 String line = buffer.readLine();

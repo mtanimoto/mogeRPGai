@@ -17,7 +17,17 @@ public class MonstersVo {
         }
     }
 
-    public int findAttackTarget() {
-        return monsters.get(0).getNumber();
+    public String findAttackTarget() {
+        // hpが2以下のモンスターが2匹以上いたら、SWINGする
+        long hp2orLess = monsters.stream().filter(m -> m.getHp() <= 2).count();
+        if (hp2orLess > 1) return "SWING";
+
+        // hpが6以下のモンスターが2匹以上いたら、DOUBLEする
+        List<MonsterVo> hp3orLessMonsters = monsters.stream()
+                .filter(m -> m.getHp() <= 6).collect(java.util.stream.Collectors.toList());
+        if (hp3orLessMonsters.size() > 1)
+            return "DOUBLE " + hp3orLessMonsters.get(0).getNumber() + " " + hp3orLessMonsters.get(1).getNumber();
+
+        return "STAB " + monsters.get(0).getNumber();
     }
 }

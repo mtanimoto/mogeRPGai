@@ -1,23 +1,24 @@
 package moge.rpg.ai.action;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.logging.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import moge.rpg.ai.App;
 import moge.rpg.ai.algorithm.MazeShortestAstar;
 import moge.rpg.ai.vo.MapVo;
+
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MapAction implements Action {
 
     private MapVo vo;
 
-    /** ダンジョンの横幅 */
+    /**
+     * ダンジョンの横幅
+     */
     private static final int X_LENGTH = 11;
 
-    /** ダンジョンの縦幅 */
+    /**
+     * ダンジョンの縦幅
+     */
     private static final int Y_LENGTH = 11;
 
     @Override
@@ -48,30 +49,33 @@ public class MapAction implements Action {
         // 階段の位置
         List<Map<String, Integer>> kaidanPos = coordinateToMapList(vo.getKaidan());
 
+        // 宝箱と階段の座標をまとめる
         List<Map<String, Integer>> searchTargets = Stream.of(itemsPos, kaidanPos).flatMap(p -> p.stream()).collect(Collectors.toList());
 
-        // 自分の位置から階段までの最短経路を探索する
+        // 自分の位置から宝箱・階段までの最短経路を探索する
         List<Queue<String>> goalCandidatePaths = new ArrayList<>();
         for (Map<String, Integer> searchPos : searchTargets) {
             int sx = myPos.get("x");
             int sy = myPos.get("y");
             int gx = searchPos.get("x");
             int gy = searchPos.get("y");
-            MazeShortestAstar msa = new MazeShortestAstar(X_LENGTH, Y_LENGTH, dungeon);
+            MazeShortestAstar msa = new MazeShortestAstar(getMaxX(wallsPos), getMaxY(wallsPos), dungeon);
             Queue<String> path = msa.astar(sx, sy, gx, gy);
             goalCandidatePaths.add(path);
         }
 
         // 探索結果
+        // 自分から一番近いところに行く
         goalCandidatePaths.sort(Comparator.comparingInt(Collection::size));
         return goalCandidatePaths.get(0).poll();
     }
 
     /**
      * 座標(x,y)が引数に与えられたリストの中にあるか探す。
+     *
      * @param coordinates 座標リスト
-     * @param x 見つけたいx軸
-     * @param y 見つけたいy軸
+     * @param x           見つけたいx軸
+     * @param y           見つけたいy軸
      * @return true あり / false なし
      */
     private boolean isLooking(List<Map<String, Integer>> coordinates, int x, int y) {
@@ -84,9 +88,10 @@ public class MapAction implements Action {
 
     /**
      * 引数の座標が探している座標(x,y)なのか判定する。
+     *
      * @param coordinate 座標
-     * @param x 見つけたいx軸
-     * @param y 見つけたいy軸
+     * @param x          見つけたいx軸
+     * @param y          見つけたいy軸
      * @return true 一致する / false 一致しない
      */
     private boolean isLookingCoordinate(Map<String, Integer> coordinate, int x, int y) {
@@ -97,8 +102,9 @@ public class MapAction implements Action {
 
     /**
      * 座標リストをマップに変換する。
+     *
      * @param coordinates 座標リスト(get(0)→x軸、get(1)→y軸)
-     * @return マップ(key→x,y)
+     * @return マップ(key → x, y)
      */
     private Map<String, Integer> coordinateToMap(List<Integer> coordinates) {
         Map<String, Integer> coordinate = new HashMap<>();
@@ -109,6 +115,7 @@ public class MapAction implements Action {
 
     /**
      * 座標リストをマップに変換し、リストに詰め込み直し返却する。
+     *
      * @param targets 座標リストのリスト
      * @return マップリスト
      */
@@ -121,32 +128,20 @@ public class MapAction implements Action {
     }
 
     /**
-     * ダンジョンを組み立てる。
+     * ダンジョンの状態を配列で表す。
      *
-     * <dl>
-     *  <dt>
-     *    <dd>こんな感じになる。これを1行ずつStringで1行ずつ配列に持っている</dd>
-     *  </dt>
-     *  <dt><dd>■■■■■■■■■■■</dd></dt>
-     *  <dt><dd>■　　　　　　　　宝■</dd></dt>
-     *  <dt><dd>■　□□□□□　□□■</dd></dt>
-     *  <dt><dd>■　　　　宝□　　　■</dd></dt>
-     *  <dt><dd>■　□□□□□　□　■</dd></dt>
-     *  <dt><dd>■宝□Ｓ　　□宝□　■</dd></dt>
-     *  <dt><dd>■□□□□　□□□　■</dd></dt>
-     *  <dt><dd>■　　　　　□　　　■</dd></dt>
-     *  <dt><dd>■　□□□□□　□　■</dd></dt>
-     *  <dt><dd>■　　　　　　　□Ｇ■</dd></dt>
-     *  <dt><dd>■■■■■■■■■■■</dd></dt>
-     * </dl>
-     * @param myPos 自分の座標
-     * @param wallsPos 外壁の座標
+     * <pre>
+     * gridの1次元目がy（縦)の情報、2次元目がx(横)の情報
+     * </pre>
+     *
+     * @param myPos     自分の座標
+     * @param wallsPos  外壁の座標
      * @param blocksPos 内壁の座標
      * @return n×mのダンジョン(説明の絵を参照)
      */
     private int[][] assembleDungeon(Map<String, Integer> myPos,
                                     List<Map<String, Integer>> wallsPos, List<Map<String, Integer>> blocksPos) {
-        int[][] grid = new int[X_LENGTH][Y_LENGTH];
+        int[][] grid = new int[Y_LENGTH][X_LENGTH];
 
         for (int y = 0; y < Y_LENGTH; y++) {
             for (int x = 0; x < X_LENGTH; x++) {
@@ -167,4 +162,15 @@ public class MapAction implements Action {
         }
         return grid;
     }
+
+    private int getMaxX(List<Map<String, Integer>> wallsPos) {
+        Optional<Integer> max = wallsPos.stream().map(pos -> pos.get("x")).max(Comparator.naturalOrder());
+        return max.get() + 1;
+    }
+
+    private int getMaxY(List<Map<String, Integer>> wallsPos) {
+        Optional<Integer> max = wallsPos.stream().map(pos -> pos.get("y")).max(Comparator.naturalOrder());
+        return max.get() + 1;
+    }
+
 }

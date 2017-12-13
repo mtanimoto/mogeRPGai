@@ -6,7 +6,8 @@ import java.util.Queue;
 
 /**
  * ダンジョン探索クラス
- * @see http://fantom1x.blog130.fc2.com/blog-entry-192.html
+ *
+ * @see "http://fantom1x.blog130.fc2.com/blog-entry-192.html"
  */
 public class MazeShortestAstar {
 
@@ -26,8 +27,9 @@ public class MazeShortestAstar {
 
     /**
      * A*(A-star, エースター)アルゴリズムでダンジョンを探索する。
-     * @param n 横幅(マス数を指定)
-     * @param m 縦幅(マス数を指定)
+     *
+     * @param n    横幅(マス数を指定)
+     * @param m    縦幅(マス数を指定)
      * @param grid 移動コスト(距離)の記録
      */
     public MazeShortestAstar(int n, int m, int[][] grid) {
