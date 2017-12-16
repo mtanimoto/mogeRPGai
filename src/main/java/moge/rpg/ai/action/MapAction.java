@@ -10,15 +10,23 @@ public class MapAction implements Action {
 
     private moge.rpg.ai.vo.Map vo;
 
+    private boolean isUsedHammer;
+    private int floorN;
+
     @Override
     public Action load(Map<String, Object> receiveData) {
         vo = new moge.rpg.ai.vo.Map(receiveData);
+        if (floorN < vo.getPlayer().getMapLevel()) {
+            floorN = vo.getPlayer().getMapLevel();
+            isUsedHammer = false;
+        }
         return this;
     }
 
     @Override
     public String execute() {
         if (vo.getPlayer().needHeal()) return "HEAL";
+
 
         // 自分の位置
         Map<String, Integer> myPos = coordinateToMap(
@@ -46,21 +54,22 @@ public class MapAction implements Action {
         List<Map<String, Integer>> searchTargets = Stream.of(itemsPos, kaidanPos).flatMap(p -> p.stream()).collect(Collectors.toList());
 
         // 自分の位置から宝箱・階段までの最短経路を探索する
-        List<Queue<String>> goalCandidatePaths = new ArrayList<>();
+        List<MazeShortestAstar> mazeList = new ArrayList<>();
         for (Map<String, Integer> searchPos : searchTargets) {
             int sx = myPos.get("x");
             int sy = myPos.get("y");
             int gx = searchPos.get("x");
             int gy = searchPos.get("y");
-            MazeShortestAstar msa = new MazeShortestAstar(maxX, maxY, dungeon);
-            Queue<String> path = msa.astar(sx, sy, gx, gy);
-            goalCandidatePaths.add(path);
+            MazeShortestAstar msa = new MazeShortestAstar(maxX, maxY, dungeon, isUsedHammer);
+            msa.astar(sx, sy, gx, gy);
+            mazeList.add(msa);
         }
 
         // 探索結果
         // 自分から一番近いところに行く
-        goalCandidatePaths.sort(Comparator.comparingInt(Collection::size));
-        return goalCandidatePaths.get(0).poll();
+        mazeList.sort(Comparator.comparingInt(o -> o.pathsSize()));
+        isUsedHammer = mazeList.get(0).isUsedHammer();
+        return mazeList.get(0).getNextPath();
     }
 
     /**
@@ -145,7 +154,7 @@ public class MapAction implements Action {
                     continue;
                 }
                 if (isLooking(wallsPos, x, y)) {
-                    grid[y][x] = -1;
+                    grid[y][x] = -2;
                     continue;
                 }
                 if (isLooking(blocksPos, x, y)) {

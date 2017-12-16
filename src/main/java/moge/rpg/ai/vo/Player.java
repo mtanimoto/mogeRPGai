@@ -14,6 +14,7 @@ public class Player {
         this.level = (int) playerData.get("level");
         this.exp = (int) playerData.get("exp");
         this.heal = (int) playerData.get("heal");
+        this.hammer = (int) playerData.get("hammer");
         this.mapLevel = (int) playerData.get("map-level");
         this.buki = (List<String>) playerData.get("buki");
         Map<String, Object> pos = (Map<String, Object>) playerData.get("pos");
@@ -93,8 +94,8 @@ public class Player {
     }
 
     public boolean needHeal() {
-        double hpPercent = (double) hp / (double) maxhp;
-        return hpPercent <= 0.35 && heal > 0;
+        double hpPercent = (double) getHp() / (double) getMaxhp();
+        return hpPercent <= 0.31 && getHeal() > 0;
     }
 
 }

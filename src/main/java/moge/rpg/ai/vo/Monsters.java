@@ -19,16 +19,24 @@ public class Monsters {
     }
 
     public String findAttackTarget() {
-        // hpが2以下のモンスターが2匹以上いたら、SWINGする
+        // hpが2以下のモンスターが1匹以上いたら、SWINGする
         long hp2orLess = monsters.stream().filter(m -> m.getHp() <= 2).count();
-        if (hp2orLess > 1) return "SWING";
+        if (hp2orLess > 0) return "SWING";
 
-        // hpが6以下のモンスターが2匹以上いたら、DOUBLEする
+        // hpが5以下のモンスターが1匹以上いたら、DOUBLEする
         List<Monster> hp3orLessMonsters = monsters.stream()
-                .filter(m -> m.getHp() <= 6).collect(Collectors.toList());
-        if (hp3orLessMonsters.size() > 1)
-            return "DOUBLE " + hp3orLessMonsters.get(0).getNumber() + " " + hp3orLessMonsters.get(1).getNumber();
+                .filter(m -> m.getHp() <= 5).collect(Collectors.toList());
+        if (hp3orLessMonsters.size() > 0) {
+            int firstNumber = hp3orLessMonsters.get(0).getNumber();
+            int secodeNumber = hp3orLessMonsters.size() == 1 ? firstNumber : hp3orLessMonsters.get(1).getNumber();
+            return "DOUBLE " + firstNumber + " " + secodeNumber;
+        }
 
-        return "STAB " + monsters.get(0).getNumber();
+        // レベルが高い順にソート
+        List<Monster> monstersSorted = monsters.stream()
+                .sorted((m1, m2) -> m2.getLevel() - m1.getLevel())
+                .collect(Collectors.toList());
+
+        return "STAB " + monstersSorted.get(0).getNumber();
     }
 }

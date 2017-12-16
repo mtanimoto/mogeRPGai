@@ -12,6 +12,8 @@ public class App {
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    private static final Logger logger = Logger.getLogger();
+
     @SuppressWarnings("unchecked")
     public static void main(String[] args) throws IOException {
         System.out.println("つばくろ");
@@ -22,7 +24,7 @@ public class App {
 
             while (buffer.ready()) {
                 String line = buffer.readLine();
-
+                logger.log(line);
                 Map<String, Object> data = mapper.readValue(line, HashMap.class);
                 if (am.load(data)) {
                     String output = am.execute();
