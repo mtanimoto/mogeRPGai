@@ -94,8 +94,21 @@ public class Player {
     }
 
     public boolean needHeal() {
+        double agiPercent = (double) getAgi() / (double) getMaxagi();
         double hpPercent = (double) getHp() / (double) getMaxhp();
-        return hpPercent <= 0.31 && getHeal() > 0;
+        double strPercent = (double) getStr() / (double) getMaxstr();
+        if (getHeal() > 9) {
+            if (agiPercent < 0.3) return true;
+            if (hpPercent <= 0.4) return true;
+            if (strPercent < 0.3) return true;
+        } else {
+            if (agiPercent < 0.15) return true;
+            if (hpPercent <= 0.334 && getHeal() > 0) return true;
+            if (strPercent < 0.15) return true;
+        }
+
+
+        return false;
     }
 
 }

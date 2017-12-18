@@ -67,7 +67,7 @@ public class MazeShortestAstar {
      * @param gx ゴール位置(横軸)
      * @param gy ゴール位置(縦軸)
      */
-    public void astar(int sx, int sy, int gx, int gy) {
+    public void astar(int sx, int sy, int gx, int gy, int hammer, int heal) {
 
         //A*(A-star) 探索
         Queue<Position> q = new PriorityQueue<>();
@@ -78,16 +78,17 @@ public class MazeShortestAstar {
 
         while (!q.isEmpty()) {
             p = q.poll();
-            useHammers.poll();
+
             if (p.cost > grid[p.y][p.x]) {
                 continue;
             }
             if (p.y == gy && p.x == gx) { //ゴールに到達
                 paths = p.path; //移動経路(戻値用)
+                useHammers = p.useHammers;
                 break;
             }
 
-            boolean isShortcut = false;
+            boolean isShortcut;
             for (int i = 0; i < dx.length; i++) {
                 int nx = p.x + dx[i];
                 int ny = p.y + dy[i];
@@ -99,7 +100,7 @@ public class MazeShortestAstar {
                 // ・今いる階でハンマーを使っていない
                 // ・自分の位置から目的地まで2回行動で行ける距離
                 // ・1回行動目が壁
-                isShortcut = isShortcut(p, gx, gy, i, nx, ny);
+                isShortcut = isShortcut(p, gx, gy, i, nx, ny, hammer, heal);
 
                 if (isShortcut || grid[ny][nx] > grid[p.y][p.x] + 1) {
                     grid[ny][nx] = grid[p.y][p.x] + 1;
@@ -107,23 +108,28 @@ public class MazeShortestAstar {
                     Position p2 = new Position(nx, ny);
                     p2.cost = grid[ny][nx]; //移動コスト(スタートからの移動量)
                     p2.estimate = getManhattanDistance(nx, ny, gx, gy) + p2.cost; //推定値
-                    p2.path = new ArrayDeque<>(p.path);
+                    p2.path.addAll(p.path);
                     p2.path.add(dir[i]); //移動経路(移動方向の記録)
+                    p2.useHammers.addAll(p.useHammers);
+                    p2.useHammers.add(isShortcut);
                     q.add(p2);
-                    useHammers.add(isShortcut);
+
                 }
             }
         }
     }
 
-    private boolean isShortcut(Position p, int gx, int gy, int i, int nx, int ny) {
-        if (!isUsedHammer) {
-            int absXY = (i % 2) == 0 ? Math.abs(p.y - gy) : Math.abs(p.x - gx);
-            if (absXY == 2 && grid[ny][nx] == -1) {
-                isUsedHammer = true;
-                return true;
-            }
+    private boolean isShortcut(Position p, int gx, int gy, int i, int nx, int ny, int hammer, int heal) {
+        if (isUsedHammer) return false;
+        if (hammer == 0) return false;
+        if (heal < 3) return true;
+
+        int absXY = (i % 2) == 0 ? Math.abs(p.y - gy) : Math.abs(p.x - gx);
+        if (absXY == 2 && grid[ny][nx] == -1) {
+            isUsedHammer = true;
+            return true;
         }
+
         return false;
     }
 
@@ -162,6 +168,7 @@ public class MazeShortestAstar {
         int cost; //移動コスト(スタートからの移動量)
         int estimate; //推定値(ゴールまでのマンハッタン距離＋移動コスト)
         Queue<String> path = new ArrayDeque<>(); //移動経路(移動方向の記録)
+        Queue<Boolean> useHammers = new ArrayDeque<>();
 
         //コンストラクタ
         private Position(int x, int y) {

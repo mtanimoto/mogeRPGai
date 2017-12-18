@@ -13,6 +13,9 @@ public class MapAction implements Action {
     private boolean isUsedHammer;
     private int floorN;
 
+    private int xLength;
+    private int yLength;
+
     @Override
     public Action load(Map<String, Object> receiveData) {
         vo = new moge.rpg.ai.vo.Map(receiveData);
@@ -27,41 +30,35 @@ public class MapAction implements Action {
     public String execute() {
         if (vo.getPlayer().needHeal()) return "HEAL";
 
+        return searchRoute();
+    }
 
+    /**
+     * 探索する
+     *
+     * @return 次の移動経路
+     */
+    private String searchRoute() {
         // 自分の位置
         Map<String, Integer> myPos = coordinateToMap(
                 Arrays.asList(vo.getPlayer().getPosX(), vo.getPlayer().getPosY()));
 
-        // 外壁の位置
-        List<Map<String, Integer>> wallsPos = coordinateToMapList(vo.getWalls());
-        // 内壁の位置
-        List<Map<String, Integer>> blocksPos = coordinateToMapList(vo.getBlocks());
-
-        // X,Yの辺の長さを取得
-        int maxX = getMaxX(wallsPos);
-        int maxY = getMaxY(wallsPos);
-
         // ダンジョンを組み立てる
-        int[][] dungeon = assembleDungeon(myPos, wallsPos, blocksPos, maxX, maxY);
+        int[][] dungeon = assembleDungeon();
 
-        // 宝箱の位置
-        List<Map<String, Integer>> itemsPos = coordinateToMapList(vo.getItems());
-
-        // 階段の位置
-        List<Map<String, Integer>> kaidanPos = coordinateToMapList(vo.getKaidan());
-
-        // 宝箱と階段の座標をまとめる
-        List<Map<String, Integer>> searchTargets = Stream.of(itemsPos, kaidanPos).flatMap(p -> p.stream()).collect(Collectors.toList());
+        // 探索対象の座標をまとめる
+        List<Map<String, Integer>> searchTargets = getRouteCandidate();
 
         // 自分の位置から宝箱・階段までの最短経路を探索する
         List<MazeShortestAstar> mazeList = new ArrayList<>();
+        int i = 0;
         for (Map<String, Integer> searchPos : searchTargets) {
             int sx = myPos.get("x");
             int sy = myPos.get("y");
             int gx = searchPos.get("x");
             int gy = searchPos.get("y");
-            MazeShortestAstar msa = new MazeShortestAstar(maxX, maxY, dungeon, isUsedHammer);
-            msa.astar(sx, sy, gx, gy);
+            MazeShortestAstar msa = new MazeShortestAstar(xLength, yLength, dungeon, isUsedHammer);
+            msa.astar(sx, sy, gx, gy, vo.getPlayer().getHammer(), vo.getPlayer().getHeal());
             mazeList.add(msa);
         }
 
@@ -71,6 +68,24 @@ public class MapAction implements Action {
         isUsedHammer = mazeList.get(0).isUsedHammer();
         return mazeList.get(0).getNextPath();
     }
+
+    private List<Map<String, Integer>> getRouteCandidate() {
+        // 宝箱の位置
+        List<Map<String, Integer>> itemsPos = coordinateToMapList(vo.getItems());
+
+        // 階段の位置
+        List<Map<String, Integer>> kaidanPos = coordinateToMapList(vo.getKaidan());
+
+        // ハツネツの位置
+        List<Map<String, Integer>> ha2Pos = coordinateToMapList(vo.getHa2());
+
+        // ラスボスの位置
+        List<Map<String, Integer>> bossPos = coordinateToMapList(vo.getBoss());
+
+        // 宝箱と階段の座標をまとめる
+        return Stream.of(itemsPos, kaidanPos, ha2Pos, bossPos).flatMap(p -> p.stream()).collect(Collectors.toList());
+    }
+
 
     /**
      * 座標(x,y)が引数に与えられたリストの中にあるか探す。
@@ -136,19 +151,26 @@ public class MapAction implements Action {
      * gridの1次元目がy（縦)の情報、2次元目がx(横)の情報
      * </pre>
      *
-     * @param myPos     自分の座標
-     * @param wallsPos  外壁の座標
-     * @param blocksPos 内壁の座標
-     * @param maxX      横の最長
-     * @param maxY      縦の最長
      * @return n×mのダンジョン(説明の絵を参照)
      */
-    private int[][] assembleDungeon(Map<String, Integer> myPos,
-                                    List<Map<String, Integer>> wallsPos, List<Map<String, Integer>> blocksPos, int maxX, int maxY) {
-        int[][] grid = new int[maxY][maxX];
+    private int[][] assembleDungeon() {
+        // 自分の位置
+        Map<String, Integer> myPos = coordinateToMap(
+                Arrays.asList(vo.getPlayer().getPosX(), vo.getPlayer().getPosY()));
 
-        for (int y = 0; y < maxY; y++) {
-            for (int x = 0; x < maxX; x++) {
+        // 外壁の位置
+        List<Map<String, Integer>> wallsPos = coordinateToMapList(vo.getWalls());
+        // 内壁の位置
+        List<Map<String, Integer>> blocksPos = coordinateToMapList(vo.getBlocks());
+
+        // X,Yの辺の長さを取得
+        xLength = getMaxX(wallsPos);
+        yLength = getMaxY(wallsPos);
+
+        int[][] grid = new int[yLength][xLength];
+
+        for (int y = 0; y < yLength; y++) {
+            for (int x = 0; x < xLength; x++) {
                 if (isLookingCoordinate(myPos, x, y)) {
                     grid[y][x] = 0;
                     continue;

@@ -1,7 +1,6 @@
 package moge.rpg.ai.action;
 
 import moge.rpg.ai.vo.Battle;
-import moge.rpg.ai.vo.Monsters;
 
 import java.util.Map;
 
@@ -18,8 +17,7 @@ public class BattleAction implements Action {
     @Override
     public String execute() {
         if (vo.getPlayer().needHeal()) return "HEAL";
-        Monsters monsters = vo.getMonsters();
-        return monsters.findAttackTarget();
+        return vo.findAttackTarget();
     }
 
 }
