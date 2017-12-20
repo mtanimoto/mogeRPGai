@@ -7,25 +7,6 @@ import java.util.stream.Collectors;
 
 public class Battle {
 
-    private static final String STAB = "";
-
-    @SuppressWarnings("unchecked")
-    public Battle(Map<String, Object> receiveData) {
-        this.monsters = new Monsters((List<Map<String, Object>>) receiveData.get("monsters"));
-        this.player = new Player((Map<String, Object>) receiveData.get("player"));
-    }
-
-    private Monsters monsters;
-    private Player player;
-
-    public Monsters getMonsters() {
-        return monsters;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
     /**
      * ソートルール
      */
@@ -39,6 +20,23 @@ public class Battle {
         int hpdiff = m2.getHp() - m1.getHp();
         return leveldiff == 0 ? hpdiff : leveldiff;
     };
+
+    private Monsters monsters;
+    private Player player;
+
+    @SuppressWarnings("unchecked")
+    public Battle(Map<String, Object> receiveData) {
+        this.monsters = new Monsters((List<Map<String, Object>>) receiveData.get("monsters"));
+        this.player = new Player((Map<String, Object>) receiveData.get("player"));
+    }
+
+    public Monsters getMonsters() {
+        return monsters;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
 
     public String findAttackTarget() {
         List<Monster> monster = monsters.getAllMonster();

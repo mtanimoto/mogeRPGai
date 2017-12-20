@@ -4,17 +4,17 @@ import java.util.Map;
 
 public class Monster implements Comparable<Monster> {
 
+    private String name;
+    private int number;
+    private int level;
+    private int hp;
+
     public Monster(Map<String, Object> monsterData) {
         this.name = (String) monsterData.get("name");
         this.number = (int) monsterData.get("number");
         this.level = (int) monsterData.get("level");
         this.hp = (int) monsterData.get("hp");
     }
-
-    private String name;
-    private int number;
-    private int level;
-    private int hp;
 
     public String getName() {
         return name;

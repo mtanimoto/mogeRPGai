@@ -4,12 +4,12 @@ import java.util.Map;
 
 public class Levelup {
 
+    private Player player;
+
     @SuppressWarnings("unchecked")
     public Levelup(Map<String, Object> receiveData) {
         this.player = new Player((Map<String, Object>) receiveData.get("player"));
     }
-
-    private Player player;
 
     public Player getPlayer() {
         return player;

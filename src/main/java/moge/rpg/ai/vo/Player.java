@@ -4,6 +4,21 @@ import java.util.List;
 import java.util.Map;
 
 public class Player {
+    private int hp;
+    private int maxhp;
+    private int str;
+    private int maxstr;
+    private int agi;
+    private int maxagi;
+    private int level;
+    private int exp;
+    private int heal;
+    private int hammer;
+    private int mapLevel;
+    private List<String> buki;
+    private int posX;
+    private int posY;
+    
     @SuppressWarnings("unchecked")
     public Player(Map<String, Object> playerData) {
         this.hp = (int) playerData.get("hp");
@@ -21,21 +36,6 @@ public class Player {
         this.posX = (int) pos.get("x");
         this.posY = (int) pos.get("y");
     }
-
-    private int hp;
-    private int maxhp;
-    private int str;
-    private int maxstr;
-    private int agi;
-    private int maxagi;
-    private int level;
-    private int exp;
-    private int heal;
-    private int hammer;
-    private int mapLevel;
-    private List<String> buki;
-    private int posX;
-    private int posY;
 
     public int getHp() {
         return hp;
@@ -94,6 +94,8 @@ public class Player {
     }
 
     public boolean needHeal() {
+        if (getHeal() == 0) return false;
+
         double agiPercent = (double) getAgi() / (double) getMaxagi();
         double hpPercent = (double) getHp() / (double) getMaxhp();
         double strPercent = (double) getStr() / (double) getMaxstr();
@@ -106,7 +108,6 @@ public class Player {
             if (hpPercent <= 0.334 && getHeal() > 0) return true;
             if (strPercent < 0.15) return true;
         }
-
 
         return false;
     }

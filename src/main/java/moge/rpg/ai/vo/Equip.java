@@ -4,14 +4,14 @@ import java.util.Map;
 
 public class Equip {
 
+    private Weapon now;
+    private Weapon discover;
+
     @SuppressWarnings("unchecked")
     public Equip(Map<String, Object> receiveData) {
         this.now = new Weapon((Map<String, Object>) receiveData.get("now"));
         this.discover = new Weapon((Map<String, Object>) receiveData.get("discover"));
     }
-
-    private Weapon now;
-    private Weapon discover;
 
     public Weapon getNow() {
         return now;

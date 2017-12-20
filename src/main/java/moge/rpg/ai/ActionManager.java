@@ -1,17 +1,15 @@
 package moge.rpg.ai;
 
+import moge.rpg.ai.action.*;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import moge.rpg.ai.action.Action;
-import moge.rpg.ai.action.BattleAction;
-import moge.rpg.ai.action.EquipAction;
-import moge.rpg.ai.action.LevelupAction;
-import moge.rpg.ai.action.MapAction;
 
 public class ActionManager {
 
     private Action action;
+
+    private String nowKey;
 
     private Map<String, Action> ma = new ConcurrentHashMap<String, Action>() {
         {
@@ -21,8 +19,6 @@ public class ActionManager {
             put("levelup", new LevelupAction());
         }
     };
-
-    private String nowKey;
 
     boolean load(Map<String, Object> receiveData) {
 

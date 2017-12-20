@@ -2,7 +2,7 @@ package moge.rpg.ai.vo;
 
 import java.util.List;
 
-public class Map {
+public class Map<S, I extends Number> {
 
     @SuppressWarnings("unchecked")
     public Map(java.util.Map<String, Object> receiveData) {

@@ -4,17 +4,17 @@ import java.util.Map;
 
 public class Weapon {
 
+    private String name;
+    private int str;
+    private int hp;
+    private int agi;
+
     public Weapon(Map<String, Object> receiveData) {
         this.name = (String) receiveData.get("name");
         this.str = (int) receiveData.get("str");
         this.hp = (int) receiveData.get("hp");
         this.agi = (int) receiveData.get("agi");
     }
-
-    private String name;
-    private int str;
-    private int hp;
-    private int agi;
 
     public String getName() {
         return name;

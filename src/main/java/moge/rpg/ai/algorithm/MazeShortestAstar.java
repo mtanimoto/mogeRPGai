@@ -15,16 +15,11 @@ public class MazeShortestAstar {
     private static final int[] dx = {0, 1, 0, -1};
     private static final int[] dy = {-1, 0, 1, 0};
     private static final String[] dir = {"UP", "RIGHT", "DOWN", "LEFT"};
-
-    //マンハッタン距離を求める
-    private int getManhattanDistance(int x1, int y1, int x2, int y2) {
-        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
-    }
-
+    private final String title;
     private final int n;
     private final int m;
     private final int[][] grid;
-
+    private final int maplevel;
     private Queue<String> paths = new ArrayDeque<>(); //移動経路(戻値用);
     private Queue<Boolean> useHammers = new ArrayDeque<>();
     private boolean isUsedHammer;
@@ -32,16 +27,24 @@ public class MazeShortestAstar {
     /**
      * A*(A-star, エースター)アルゴリズムでダンジョンを探索する。
      *
-     * @param n    横幅(マス数を指定)
-     * @param m    縦幅(マス数を指定)
-     * @param grid 移動コスト(距離)の記録
+     * @param title        探索対象(階段とか宝箱とか)
+     * @param n            横幅(マス数を指定)
+     * @param m            縦幅(マス数を指定)
+     * @param grid         移動コスト(距離)の記録
      * @param isUsedHammer 使用済ハンマーか
      */
-    public MazeShortestAstar(int n, int m, int[][] grid, boolean isUsedHammer) {
+    public MazeShortestAstar(String title, int n, int m, int[][] grid, boolean isUsedHammer, int maplevel) {
+        this.title = title;
         this.n = n;
         this.m = m;
         this.grid = gridCopy(grid);
         this.isUsedHammer = isUsedHammer;
+        this.maplevel = maplevel;
+    }
+
+    //マンハッタン距離を求める
+    private int getManhattanDistance(int x1, int y1, int x2, int y2) {
+        return Math.abs(x1 - x2) + Math.abs(y1 - y2);
     }
 
     /**
@@ -92,15 +95,11 @@ public class MazeShortestAstar {
             for (int i = 0; i < dx.length; i++) {
                 int nx = p.x + dx[i];
                 int ny = p.y + dy[i];
-                if (nx < 0 || m <= nx || ny < 0 || n <= ny) { //範囲外
+                if (nx < 0 || n <= nx || ny < 0 || m <= ny) { //範囲外
                     continue;
                 }
 
-                // 以下条件の場合、ハンマーを使ってショートカットする
-                // ・今いる階でハンマーを使っていない
-                // ・自分の位置から目的地まで2回行動で行ける距離
-                // ・1回行動目が壁
-                isShortcut = isShortcut(p, gx, gy, i, nx, ny, hammer, heal);
+                isShortcut = isShortcut(p, gx, gy, i, nx, ny, hammer);
 
                 if (isShortcut || grid[ny][nx] > grid[p.y][p.x] + 1) {
                     grid[ny][nx] = grid[p.y][p.x] + 1;
@@ -119,10 +118,23 @@ public class MazeShortestAstar {
         }
     }
 
-    private boolean isShortcut(Position p, int gx, int gy, int i, int nx, int ny, int hammer, int heal) {
-        if (isUsedHammer) return false;
+    /**
+     * ハンマーを使ってショートカットするかを判定する
+     *
+     * @param p      ポジション
+     * @param gx     目的地の位置(横軸)
+     * @param gy     目的地の位置(縦軸)
+     * @param i      上下左右どちらに進むかを制御している変数
+     * @param nx     次に進む予定の横軸座標
+     * @param ny     次に進む予定の縦軸座標
+     * @param hammer ハンマーの数
+     * @return true:ショートカットする / false:しない
+     */
+    private boolean isShortcut(Position p, int gx, int gy, int i, int nx, int ny, int hammer) {
+        if (!(title.equals("kaidan") && maplevel > 49)) {
+            if (isUsedHammer) return false;
+        }
         if (hammer == 0) return false;
-        if (heal < 3) return true;
 
         int absXY = (i % 2) == 0 ? Math.abs(p.y - gy) : Math.abs(p.x - gx);
         if (absXY == 2 && grid[ny][nx] == -1) {
