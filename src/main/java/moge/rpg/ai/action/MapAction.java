@@ -9,7 +9,6 @@ public class MapAction implements Action {
 
     private moge.rpg.ai.vo.Map vo;
 
-    private boolean isUsedHammer;
     private int floorN;
 
     private int xLength;
@@ -20,7 +19,6 @@ public class MapAction implements Action {
         vo = new moge.rpg.ai.vo.Map(receiveData);
         if (floorN < vo.getPlayer().getMapLevel()) {
             floorN = vo.getPlayer().getMapLevel();
-            isUsedHammer = false;
         }
         return this;
     }
@@ -57,8 +55,8 @@ public class MapAction implements Action {
                 int sy = myPos.get("y");
                 int gx = searchPos.get("x");
                 int gy = searchPos.get("y");
-                MazeShortestAstar msa = new MazeShortestAstar(title, xLength, yLength, dungeon, isUsedHammer, vo.getPlayer().getMapLevel());
-                msa.astar(sx, sy, gx, gy, vo.getPlayer().getHammer(), vo.getPlayer().getHeal());
+                MazeShortestAstar msa = new MazeShortestAstar(title, myPos, searchPos, xLength, yLength, dungeon, vo.getPlayer());
+                msa.astar();
                 mazeList.add(msa);
             }
         }
@@ -66,8 +64,16 @@ public class MapAction implements Action {
         // 探索結果
         // 自分から一番近いところに行く
         mazeList.sort(Comparator.comparingInt(o -> o.pathsSize()));
-        isUsedHammer = mazeList.get(0).isUsedHammer();
-        return mazeList.get(0).getNextPath();
+        MazeShortestAstar result = mazeList.get(0);
+        if (result.getTitle().equals("kaidan")) {
+            MazeShortestAstar msa = new MazeShortestAstar(result.getTitle(), result.getMyPos(), result.getSearchPos()
+                    , xLength, yLength, dungeon, vo.getPlayer(), false);
+            msa.astar();
+            if (msa.pathsSize() - result.pathsSize() <= 10) {
+                result = msa;
+            }
+        }
+        return result.getNextPath();
     }
 
     private List<PositionList> getRouteCandidate() {

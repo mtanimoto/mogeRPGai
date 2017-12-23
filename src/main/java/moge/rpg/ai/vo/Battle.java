@@ -1,25 +1,9 @@
 package moge.rpg.ai.vo;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Battle {
-
-    /**
-     * ソートルール
-     */
-    private static final Comparator<Monster> SORT_RULE = (m1, m2) -> {
-        boolean isBoss = m1.getName().equals("ハツネツ") || m1.getName().equals("もげぞう");
-        int level1 = m1.getLevel();
-        int level2 = m2.getLevel();
-        if (isBoss) level1 -= 100;
-
-        int leveldiff = level2 - level1;
-        int hpdiff = m2.getHp() - m1.getHp();
-        return leveldiff == 0 ? hpdiff : leveldiff;
-    };
 
     private Monsters monsters;
     private Player player;
@@ -39,33 +23,29 @@ public class Battle {
     }
 
     public String findAttackTarget() {
-        List<Monster> monster = monsters.getAllMonster();
-
-        // マッチョオークが強すぎるので優先して倒す
-        List<Monster> oak = monster.stream().filter(m -> m.getName().equals("オーク"))
-                .sorted(SORT_RULE)
-                .collect(Collectors.toList());
-        if (!oak.isEmpty()) return STUB(oak.get(0).getNumber());
+        List<Monster> monsters = this.monsters.getAllMonster();
 
         // hpが2以下のモンスターが1匹以上いたら、SWINGする
-        int hp2orLess = (int) monster.stream().filter(m -> m.getHp() <= 2).count();
+        int hp2orLess = (int) monsters.stream().filter(m -> m.getHp() <= 2).count();
         if (hp2orLess > 0) return SWING();
 
         // hpが5以下のモンスターが1匹以上いたら、DOUBLEする
-        List<Monster> hp3orLessMonsters = monster.stream()
-                .filter(m -> m.getHp() <= 5).collect(Collectors.toList());
-        if (hp3orLessMonsters.size() > 0) {
-            int firstNumber = hp3orLessMonsters.get(0).getNumber();
-            int secondNumber = hp3orLessMonsters.size() == 1 ? firstNumber : hp3orLessMonsters.get(1).getNumber();
+        int hp5orLessCount = (int) monsters.stream().filter(m -> m.getHp() <= 5).count();
+        if (monsters.size() > 1 && hp5orLessCount > 0) {
+            int firstNumber = -1;
+            int secondNumber = -1;
+            for (Monster monster : monsters) {
+                int hp = monster.getHp();
+                if (hp <= 5) {
+                    if (firstNumber < 0) firstNumber = monster.getNumber();
+                    if (secondNumber < 0) secondNumber = monster.getNumber();
+                }
+            }
             return DOUBLE(firstNumber, secondNumber);
         }
 
         // レベルが高い順にソート
-        List<Monster> monstersSorted = monster.stream()
-                .sorted(SORT_RULE)
-                .collect(Collectors.toList());
-
-        return STUB(monstersSorted.get(0).getNumber());
+        return STUB(monsters.get(0).getNumber());
     }
 
     private String STUB(int number) {

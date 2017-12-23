@@ -1,6 +1,7 @@
 package moge.rpg.ai.vo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,7 @@ public class Monsters {
     }
 
     public List<Monster> getAllMonster() {
+        Collections.sort(monsters);
         return monsters;
     }
 }

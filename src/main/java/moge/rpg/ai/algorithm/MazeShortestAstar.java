@@ -1,6 +1,9 @@
 package moge.rpg.ai.algorithm;
 
+import moge.rpg.ai.vo.Player;
+
 import java.util.ArrayDeque;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
@@ -19,27 +22,56 @@ public class MazeShortestAstar {
     private final int n;
     private final int m;
     private final int[][] grid;
-    private final int maplevel;
-    private Queue<String> paths = new ArrayDeque<>(); //移動経路(戻値用);
-    private Queue<Boolean> useHammers = new ArrayDeque<>();
-    private boolean isUsedHammer;
+    private Position p;
+    private boolean useHammer;
+    private Map<String, Integer> myPos;
+    private Map<String, Integer> searchPos;
+    private Player player;
 
     /**
      * A*(A-star, エースター)アルゴリズムでダンジョンを探索する。
      *
-     * @param title        探索対象(階段とか宝箱とか)
-     * @param n            横幅(マス数を指定)
-     * @param m            縦幅(マス数を指定)
-     * @param grid         移動コスト(距離)の記録
-     * @param isUsedHammer 使用済ハンマーか
+     * @param title 探索対象(階段とか宝箱とか)
+     * @param myPos 自分の現在地
+     * @param searchPos 目的地
+     * @param n     横幅(マス数を指定)
+     * @param m     縦幅(マス数を指定)
+     * @param grid  移動コスト(距離)の記録
+     * @param player プレイヤーの情報
      */
-    public MazeShortestAstar(String title, int n, int m, int[][] grid, boolean isUsedHammer, int maplevel) {
+    public MazeShortestAstar(String title, Map<String, Integer> myPos, Map<String, Integer> searchPos, int n, int m, int[][] grid, Player player) {
+        this(title, myPos, searchPos, n, m, grid, player, true);
+    }
+
+    /**
+     * A*(A-star, エースター)アルゴリズムでダンジョンを探索する。
+     *
+     * @param title     探索対象(階段とか宝箱とか)
+     * @param myPos     自分の現在地
+     * @param searchPos 目的地
+     * @param n         横幅(マス数を指定)
+     * @param m         縦幅(マス数を指定)
+     * @param grid      移動コスト(距離)の記録
+     * @param player    プレイヤーの情報
+     * @param useHammer ハンマーを使って探索するか
+     */
+    public MazeShortestAstar(String title, Map<String, Integer> myPos, Map<String, Integer> searchPos, int n, int m, int[][] grid, Player player, boolean useHammer) {
         this.title = title;
+        this.myPos = myPos;
+        this.searchPos = searchPos;
         this.n = n;
         this.m = m;
         this.grid = gridCopy(grid);
-        this.isUsedHammer = isUsedHammer;
-        this.maplevel = maplevel;
+        this.player = player;
+        this.useHammer = useHammer;
+    }
+
+    public Map<String, Integer> getMyPos() {
+        return myPos;
+    }
+
+    public Map<String, Integer> getSearchPos() {
+        return searchPos;
     }
 
     //マンハッタン距離を求める
@@ -64,13 +96,12 @@ public class MazeShortestAstar {
 
     /**
      * A*(A-star)探索アルゴリズム
-     *
-     * @param sx スタート位置(横軸)
-     * @param sy スタート位置(縦軸)
-     * @param gx ゴール位置(横軸)
-     * @param gy ゴール位置(縦軸)
      */
-    public void astar(int sx, int sy, int gx, int gy, int hammer, int heal) {
+    public void astar() {
+        int sx = myPos.get("x");
+        int sy = myPos.get("y");
+        int gx = searchPos.get("x");
+        int gy = searchPos.get("y");
 
         //A*(A-star) 探索
         Queue<Position> q = new PriorityQueue<>();
@@ -85,13 +116,13 @@ public class MazeShortestAstar {
             if (p.cost > grid[p.y][p.x]) {
                 continue;
             }
+
             if (p.y == gy && p.x == gx) { //ゴールに到達
-                paths = p.path; //移動経路(戻値用)
-                useHammers = p.useHammers;
+                this.p = p;
                 break;
             }
 
-            boolean isShortcut;
+            boolean isShortcut = false;
             for (int i = 0; i < dx.length; i++) {
                 int nx = p.x + dx[i];
                 int ny = p.y + dy[i];
@@ -99,7 +130,7 @@ public class MazeShortestAstar {
                     continue;
                 }
 
-                isShortcut = isShortcut(p, gx, gy, i, nx, ny, hammer);
+                isShortcut = isShortcut(p, nx, ny);
 
                 if (isShortcut || grid[ny][nx] > grid[p.y][p.x] + 1) {
                     grid[ny][nx] = grid[p.y][p.x] + 1;
@@ -109,8 +140,6 @@ public class MazeShortestAstar {
                     p2.estimate = getManhattanDistance(nx, ny, gx, gy) + p2.cost; //推定値
                     p2.path.addAll(p.path);
                     p2.path.add(dir[i]); //移動経路(移動方向の記録)
-                    p2.useHammers.addAll(p.useHammers);
-                    p2.useHammers.add(isShortcut);
                     q.add(p2);
 
                 }
@@ -121,26 +150,22 @@ public class MazeShortestAstar {
     /**
      * ハンマーを使ってショートカットするかを判定する
      *
-     * @param p      ポジション
-     * @param gx     目的地の位置(横軸)
-     * @param gy     目的地の位置(縦軸)
-     * @param i      上下左右どちらに進むかを制御している変数
-     * @param nx     次に進む予定の横軸座標
-     * @param ny     次に進む予定の縦軸座標
-     * @param hammer ハンマーの数
-     * @return true:ショートカットする / false:しない
+     * @param p  ポジション
+     * @param nx 次に進む予定の横軸座標
+     * @param ny 次に進む予定の縦軸座標
      */
-    private boolean isShortcut(Position p, int gx, int gy, int i, int nx, int ny, int hammer) {
-        if (!(title.equals("kaidan") && maplevel > 49)) {
-            if (isUsedHammer) return false;
-        }
-        if (hammer == 0) return false;
+    private boolean isShortcut(Position p, int nx, int ny) {
 
-        int absXY = (i % 2) == 0 ? Math.abs(p.y - gy) : Math.abs(p.x - gx);
-        if (absXY == 2 && grid[ny][nx] == -1) {
-            isUsedHammer = true;
-            return true;
-        }
+        if (!useHammer) return false;
+        if (player.getMapLevel() < 30) return false;
+        if (player.getHammer() == 0) return false;
+
+        int absX = Math.abs(p.x - searchPos.get("x"));
+        int absY = Math.abs(p.y - searchPos.get("y"));
+        // 壁を挟んで目的地が見えているか
+        boolean isDestAdjacent = ((absX == 2 && absY == 0) || (absX == 0 && absY == 2)) && (grid[ny][nx] == -1);
+
+        if (title.equals("kaidan") && isDestAdjacent) return true;
 
         return false;
     }
@@ -151,17 +176,7 @@ public class MazeShortestAstar {
      * @return 移動方向
      */
     public String getNextPath() {
-        return paths.poll();
-    }
-
-    /**
-     * 次の行動はハンマーを使うかを判定する
-     * ただし、使用済みの場合はtrueを返す
-     *
-     * @return true：使用する / false:使用しない
-     */
-    public boolean isUsedHammer() {
-        return isUsedHammer || useHammers.poll();
+        return p.path.poll();
     }
 
     /**
@@ -170,7 +185,16 @@ public class MazeShortestAstar {
      * @return 移動コスト
      */
     public int pathsSize() {
-        return paths.size();
+        return p.estimate;
+    }
+
+    /**
+     * 探索対象を取得
+     *
+     * @return
+     */
+    public String getTitle() {
+        return title;
     }
 
     //位置情報の構造体
@@ -180,7 +204,6 @@ public class MazeShortestAstar {
         int cost; //移動コスト(スタートからの移動量)
         int estimate; //推定値(ゴールまでのマンハッタン距離＋移動コスト)
         Queue<String> path = new ArrayDeque<>(); //移動経路(移動方向の記録)
-        Queue<Boolean> useHammers = new ArrayDeque<>();
 
         //コンストラクタ
         private Position(int x, int y) {

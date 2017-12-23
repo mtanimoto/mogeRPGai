@@ -32,7 +32,7 @@ public class App {
                 }
             }
         }
-//        Map<String, Object> data = mapper.readValue(test50Map, HashMap.class);
+//        Map<String, Object> data = mapper.readValue(testMap, HashMap.class);
 //        am.load(data);
 //        String output = am.execute();
 //        System.out.println(output);
