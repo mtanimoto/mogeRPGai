@@ -13,7 +13,7 @@ public class Monster implements Comparable<Monster> {
         priorityMap.put("スライム", 3);
         priorityMap.put("ブリガンド", 4);
         priorityMap.put("メタルヨテイチ", 5);
-        priorityMap.put("ハツネツ", 6);
+        priorityMap.put("ハツネツエリア", 6);
         priorityMap.put("もげぞう", 7);
     }
 

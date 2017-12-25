@@ -1,6 +1,7 @@
 package moge.rpg.ai;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -8,7 +9,7 @@ import java.util.logging.SimpleFormatter;
 
 public class Logger {
 
-    private static final String file = "/home/masashi/Desktop/log.log";
+    private static final String file = "/home/masashi/PeerCast/mogeRPGserver/log/logger_" + System.currentTimeMillis() + ".log";
 
     private static Logger selfInstance;
 
@@ -39,7 +40,11 @@ public class Logger {
         return selfInstance;
     }
 
-    public void log(String msg) {
+    public void info(String msg) {
         logger.fine(msg);
+    }
+
+    public void close() {
+        Arrays.stream(logger.getHandlers()).forEach(h -> h.close());
     }
 }

@@ -18,7 +18,9 @@ public class Levelup {
     public String upWhich() {
         int hp = player.getMaxhp();
         int agi = player.getMaxagi();
+        int str = player.getStr();
 
+        if (str < hp && str < agi) return "STR";
         return agi - hp < 2 ? "AGI" : "HP";
     }
 }

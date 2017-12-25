@@ -11,9 +11,6 @@ public class MapAction implements Action {
 
     private int floorN;
 
-    private int xLength;
-    private int yLength;
-
     @Override
     public Action load(Map<String, Object> receiveData) {
         vo = new moge.rpg.ai.vo.Map(receiveData);
@@ -51,27 +48,20 @@ public class MapAction implements Action {
         for (PositionList<Map<String, Integer>> searchPos2 : searchTargets) {
             String title = searchPos2.getTitle();
             for (Map<String, Integer> searchPos : searchPos2) {
-                int sx = myPos.get("x");
-                int sy = myPos.get("y");
-                int gx = searchPos.get("x");
-                int gy = searchPos.get("y");
-                MazeShortestAstar msa = new MazeShortestAstar(title, myPos, searchPos, xLength, yLength, dungeon, vo.getPlayer());
-                msa.astar();
-                mazeList.add(msa);
+                MazeShortestAstar maze = new MazeShortestAstar(title, myPos, searchPos, dungeon, vo.getPlayer(), false);
+                maze.astar();
+                mazeList.add(maze);
             }
         }
 
         // 探索結果
-        // 自分から一番近いところに行く
         mazeList.sort(Comparator.comparingInt(o -> o.pathsSize()));
         MazeShortestAstar result = mazeList.get(0);
-        if (result.getTitle().equals("kaidan")) {
-            MazeShortestAstar msa = new MazeShortestAstar(result.getTitle(), result.getMyPos(), result.getSearchPos()
-                    , xLength, yLength, dungeon, vo.getPlayer(), false);
-            msa.astar();
-            if (msa.pathsSize() - result.pathsSize() <= 10) {
-                result = msa;
-            }
+
+        MazeShortestAstar maze = new MazeShortestAstar(result.getTitle(), result.getMyPos(), result.getSearchPos(), dungeon, vo.getPlayer(), true);
+        maze.astar();
+        if (result.pathsSize() - maze.pathsSize() >= 10) {
+            result = maze;
         }
         return result.getNextPath();
     }
@@ -87,7 +77,14 @@ public class MapAction implements Action {
         PositionList<Map<String, Integer>> bossPos = coordinateToMapList("boss", vo.getBoss());
         posList.add(bossPos);
 
-        if (ha2Pos.isEmpty() || bossPos.isEmpty()) {
+        if (ha2Pos.isEmpty() && bossPos.isEmpty()) {
+            if (vo.getPlayer().getMapLevel() > 65) {
+                // 階段の位置
+                PositionList<Map<String, Integer>> kaidanPos = coordinateToMapList("kaidan", vo.getKaidan());
+                posList.add(kaidanPos);
+                return posList;
+            }
+
             // 宝箱の位置
             PositionList<Map<String, Integer>> itemsPos = coordinateToMapList("itmes", vo.getItems());
             posList.add(itemsPos);
@@ -179,8 +176,8 @@ public class MapAction implements Action {
         PositionList<Map<String, Integer>> blocksPos = coordinateToMapList("blocks", vo.getBlocks());
 
         // X,Yの辺の長さを取得
-        xLength = vo.getPlayer().getMapLevel() == 100 ? getMaxX(blocksPos) : getMaxX(wallsPos);
-        yLength = vo.getPlayer().getMapLevel() == 100 ? getMaxY(blocksPos) : getMaxY(wallsPos);
+        int xLength = getMaxX(wallsPos);
+        int yLength = getMaxY(wallsPos);
 
         int[][] grid = new int[yLength][xLength];
 

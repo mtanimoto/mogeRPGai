@@ -26,4 +26,8 @@ public class Monsters {
         Collections.sort(monsters);
         return monsters;
     }
+
+    public boolean isExistOak() {
+        return monsters.stream().filter(o -> o.getName().equals("オーク")).count() > 0;
+    }
 }

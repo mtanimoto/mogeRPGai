@@ -100,19 +100,9 @@ public class Player {
         double hpPercent = (double) getHp() / (double) getMaxhp();
         double strPercent = (double) getStr() / (double) getMaxstr();
 
-        if ((hpPercent <= 0.35) && (agiPercent < 0.25 || agiPercent < 0.25)) {
-            return true;
-        }
-
-        if (getHeal() > 9) {
-            if (agiPercent < 0.3) return true;
-            if (hpPercent <= 0.4) return true;
-            if (strPercent < 0.3) return true;
-        } else {
-            if (agiPercent < 0.15) return true;
-            if (hpPercent <= 0.334) return true;
-            if (strPercent < 0.15) return true;
-        }
+        if (hpPercent <= 0.32) return true;
+        if (hpPercent <= 0.36 && agiPercent < 0.2) return true;
+        if (hpPercent <= 0.36 && strPercent < 0.2) return true;
 
         return false;
     }
